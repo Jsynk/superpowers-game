@@ -21,6 +21,12 @@ interface Animation {
   keyFrames: AnimationKeyFrames;
 }
 
+interface AnimationTimes {
+  name: string;
+  time: number;
+  ignoreFilter?: RegExp;
+}
+
 function getInterpolationData(keyFrames: any[], time: number) {
   let prevKeyFrame = keyFrames[keyFrames.length - 1];
 
@@ -287,6 +293,21 @@ export default class ModelRenderer extends SupEngine.ActorComponent {
     return;
   }
 
+  setAnimationsAndTimes(animationList: Array<AnimationTimes>) {
+    if (animationList instanceof Array) {
+      for (let i = 0; i < animationList.length; i++) {
+        let aniListItem = animationList[i];
+        let newAnimation = this.animationsByName[aniListItem.animation];
+        this.animation = newAnimation;
+        this.animationLooping = true;
+        this.animationTimer = aniListItem.time * this.actor.gameInstance.framesPerSecond;
+        this.isAnimationPlaying = true;
+        this.updatePose(aniListItem.ignoreFilter);
+      }
+    }
+    return;
+  }
+
   getAnimation(): string { return (this.animation != null) ? this.animation.name : null; }
 
   setAnimationTime(time: number) {
@@ -341,7 +362,7 @@ export default class ModelRenderer extends SupEngine.ActorComponent {
     return { position, orientation, scale };
   }
 
-  updatePose() {
+  updatePose(ignoreFilter?: RegExp) {
     this.hasPoseBeenUpdated = true;
 
     // TODO: this.asset.speedMultiplier
@@ -361,7 +382,7 @@ export default class ModelRenderer extends SupEngine.ActorComponent {
     for (let i = 0; i < (<THREE.SkinnedMesh>this.threeMesh).skeleton.bones.length; i++) {
       let bone = (<THREE.SkinnedMesh>this.threeMesh).skeleton.bones[i];
       let boneKeyFrames = this.animation.keyFrames[bone.name];
-      if (boneKeyFrames == null) continue;
+      if (boneKeyFrames == null || (ignoreFilter && ignoreFilter.test(bone.name))) continue;
 
       if (boneKeyFrames.translation != null) {
         let { prevKeyFrame, nextKeyFrame, t } = getInterpolationData(boneKeyFrames.translation, time);

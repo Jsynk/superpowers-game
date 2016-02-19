@@ -1,3 +1,9 @@
+interface AnimationTimes {
+  name: string;
+  time: number;
+  ignoreFilter?: RegExp;
+}
+
 declare namespace Sup {
   class ModelRenderer extends ActorComponent {
     constructor(actor: Actor, pathOrAsset?: string|Model);
@@ -21,6 +27,7 @@ declare namespace Sup {
     getAnimation(): string;
     setAnimation(animationName: string, looping?: boolean): ModelRenderer;
     setAnimationTime(time: number): ModelRenderer;
+    setAnimationsAndTimes(animationList: Array<AnimationTimes>): ModelRenderer;
     getAnimationTime(): number;
     getAnimationDuration(): number;
 
