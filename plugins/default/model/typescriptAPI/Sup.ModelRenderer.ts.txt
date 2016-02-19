@@ -64,7 +64,7 @@ namespace Sup {
     }
 
     setAnimation(animationName, looping) { this.__inner.setAnimation(animationName, looping); return this }
-    setAnimationsAndTimes(animationList) { this.__inner.setAnimationsAndTimes(animationList); return this }
+    setMultipleAnimations(animationItemList) { this.__inner.setMultipleAnimations(animationItemList); return this }
     getAnimation() { return this.__inner.getAnimation() }
     setAnimationTime(time) { this.__inner.setAnimationTime(time); return this }
     getAnimationTime() { return this.__inner.getAnimationTime() }

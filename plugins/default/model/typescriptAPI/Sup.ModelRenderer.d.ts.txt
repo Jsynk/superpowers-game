@@ -1,7 +1,8 @@
-interface AnimationTimes {
+interface AnimationItem {
   name: string;
-  time: number;
-  ignoreFilter?: RegExp;
+  time?: number;
+  looping?: boolean;
+  ignoreBoneNameFilter?: RegExp;
 }
 
 declare namespace Sup {
@@ -27,9 +28,9 @@ declare namespace Sup {
     getAnimation(): string;
     setAnimation(animationName: string, looping?: boolean): ModelRenderer;
     setAnimationTime(time: number): ModelRenderer;
-    setAnimationsAndTimes(animationList: Array<AnimationTimes>): ModelRenderer;
     getAnimationTime(): number;
     getAnimationDuration(): number;
+    setMultipleAnimations(animationItemList: Array<AnimationItem>): ModelRenderer;    
 
     isAnimationPlaying(): boolean;
     playAnimation(looping?: boolean): ModelRenderer;

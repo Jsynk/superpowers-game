@@ -21,10 +21,11 @@ interface Animation {
   keyFrames: AnimationKeyFrames;
 }
 
-interface AnimationTimes {
+interface AnimationItem {
   name: string;
-  time: number;
-  ignoreFilter?: RegExp;
+  time?: number;
+  looping?: boolean;
+  ignoreBoneNameFilter?: RegExp;
 }
 
 function getInterpolationData(keyFrames: any[], time: number) {
@@ -293,17 +294,20 @@ export default class ModelRenderer extends SupEngine.ActorComponent {
     return;
   }
 
-  setAnimationsAndTimes(animationList: Array<AnimationTimes>) {
-    if (animationList instanceof Array) {
-      for (let i = 0; i < animationList.length; i++) {
-        let aniListItem = animationList[i];
-        let newAnimation = this.animationsByName[aniListItem.animation];
-        this.animation = newAnimation;
-        this.animationLooping = true;
-        this.animationTimer = aniListItem.time * this.actor.gameInstance.framesPerSecond;
-        this.isAnimationPlaying = true;
-        this.updatePose(aniListItem.ignoreFilter);
+  setMultipleAnimations(newAnimationItemList: Array<AnimationItem>) {
+    for (let i = 0; i < newAnimationItemList.length; i++) {
+      let newAnimationItem = newAnimationItemList[i];
+      let newAnimation = this.animationsByName[newAnimationItem.name];
+      if (newAnimation == null) throw new Error(`Animation ${newAnimationItem.name} doesn't exist`);
+      this.animation = newAnimation;
+      this.animationLooping = newAnimationItem.looping ? true : false;
+      let time = newAnimationItem.time;
+      if (typeof time === "number") {
+        if (time < 0 || time > this.getAnimationDuration()) throw new Error("Invalid time");
+        this.animationTimer = time * this.actor.gameInstance.framesPerSecond;
       }
+      this.isAnimationPlaying = true;
+      this.updatePose(newAnimationItem.ignoreBoneNameFilter);
     }
     return;
   }
@@ -362,7 +366,7 @@ export default class ModelRenderer extends SupEngine.ActorComponent {
     return { position, orientation, scale };
   }
 
-  updatePose(ignoreFilter?: RegExp) {
+  updatePose(ignoreBoneNameFilter?: RegExp) {
     this.hasPoseBeenUpdated = true;
 
     // TODO: this.asset.speedMultiplier
@@ -382,7 +386,7 @@ export default class ModelRenderer extends SupEngine.ActorComponent {
     for (let i = 0; i < (<THREE.SkinnedMesh>this.threeMesh).skeleton.bones.length; i++) {
       let bone = (<THREE.SkinnedMesh>this.threeMesh).skeleton.bones[i];
       let boneKeyFrames = this.animation.keyFrames[bone.name];
-      if (boneKeyFrames == null || (ignoreFilter && ignoreFilter.test(bone.name))) continue;
+      if (boneKeyFrames == null || (ignoreBoneNameFilter && ignoreBoneNameFilter.test(bone.name))) continue;
 
       if (boneKeyFrames.translation != null) {
         let { prevKeyFrame, nextKeyFrame, t } = getInterpolationData(boneKeyFrames.translation, time);
